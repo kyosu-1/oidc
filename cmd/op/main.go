@@ -21,6 +21,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Get(healthEndpoint, health)
 	r.Get(discoveryEndpoint, discovery)
+	r.Get(authorizationEndpoin, authorize)
 
 	srv := &http.Server{
 		Addr:         ":8080",
