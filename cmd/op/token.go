@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// tokenRequest はトークンリクエストを定義します
+// tokenRequest is the request for the token endpoint
 type tokenRequest struct {
 	GrantType   string `json:"grant_type"`
 	Code        string `json:"code"`
@@ -23,7 +23,7 @@ type idTokenPayload struct {
 	Iat int64  `json:"iat"`
 }
 
-// トークンレスポンスにIDトークンを追加します
+// tokenResponse is the response for the token endpoint
 type tokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
@@ -32,35 +32,34 @@ type tokenResponse struct {
 	IDToken      string `json:"id_token"`
 }
 
-// tokenEndpoint はトークンエンドポイントのハンドラです
+// tokenEndpoint handles token requests
 func token(w http.ResponseWriter, r *http.Request) {
-	// リクエストボディをパースします
 	var req tokenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	// grant_typeがauthorization_codeであることを確認
+	// check grant type
 	if req.GrantType != "authorization_code" {
 		http.Error(w, "Unsupported grant type", http.StatusBadRequest)
 		return
 	}
 
-	// 認可コードを検証
+	// validate authorization code
 	authCode, ok := authorizeCodeMap[req.Code]
 	if !ok {
 		http.Error(w, "Invalid code", http.StatusBadRequest)
 		return
 	}
 
-	// 認可コードに紐づくクライアントIDが一致することを確認
+	// check redirect uri
 	if authCode.ClientID != req.ClientID {
 		http.Error(w, "Invalid client", http.StatusBadRequest)
 		return
 	}
 
-	// アクセストークンを生成（簡易実装ではランダム文字列を使用）
+	// generate access token by random string
 	accessToken, _ := generateRandomString(32)
 
 	now := time.Now()
@@ -72,15 +71,14 @@ func token(w http.ResponseWriter, r *http.Request) {
 		Iat: now.Unix(),                // 発行時刻
 	}
 
-	// IDトークンをJSON文字列にエンコードします
-	// 本来はJWTとして署名する必要があります
+	// IDトークンをJSONに変換
+	// 本来はJWTとして署名する必要がある
 	idTokenStr, err := json.Marshal(idToken)
 	if err != nil {
 		http.Error(w, "Failed to generate ID token", http.StatusInternalServerError)
 		return
 	}
 
-	// トークンレスポンスにIDトークンを追加します
 	resp := tokenResponse{
 		AccessToken: accessToken,
 		TokenType:   "Bearer",
