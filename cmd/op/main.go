@@ -22,6 +22,7 @@ func main() {
 	r.Get(healthEndpoint, health)
 	r.Get(discoveryEndpoint, discovery)
 	r.Get(authorizationEndpoin, authorize)
+	r.Post(tokenEndpoint, token)
 
 	srv := &http.Server{
 		Addr:         ":8080",
