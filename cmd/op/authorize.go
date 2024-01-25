@@ -35,6 +35,7 @@ type authorizeResponse struct {
 // 有効期限や発行時刻など
 type authorizeCode struct {
 	Code        string
+	ClientID    string
 	RedirectURI string
 	expiresAt   int64
 	issuedAt    int64
@@ -98,6 +99,7 @@ func authorize(w http.ResponseWriter, r *http.Request) {
 	}
 	authorizeCodeMap[code] = authorizeCode{
 		Code:        code,
+		ClientID:    r.FormValue("client_id"),
 		RedirectURI: r.FormValue("redirect_uri"),
 		expiresAt:   time.Now().Add(10 * time.Minute).Unix(),
 		issuedAt:    time.Now().Unix(),
